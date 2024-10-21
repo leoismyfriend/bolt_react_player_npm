@@ -1,30 +1,50 @@
-"use client"
-
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Note } from '@/components/note-input'; // Adjust the path correctly based on your project structure
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash, ThumbsUp } from 'lucide-react';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card'; // Adjust these imports as needed to fit your project
 
-type Notestamp = {
+interface Note {
   id: number;
   content: string;
-  timestamp: string;
   likes: number;
-};
+  timestamp: string; // Assuming timestamp is a string; adjust if it's a different type
+}
 
-export function NoteList() {
-  const [notes, setNotes] = useState<Notestamp[]>([
-    { id: 1, content: "This is an example note", timestamp: "0:30", likes: 0 },
-  ]);
+interface NoteListProps {
+  notes: Note[];
+  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
+}
+
+export function NoteList({ notes, setNotes }: NoteListProps) {
+  const [editableNote, setEditableNote] = useState<Note | null>(null);
+  const [editContent, setEditContent] = useState<string>('');
 
   const handleLike = (id: number) => {
-    setNotes(notes.map(note => 
-      note.id === id ? { ...note, likes: note.likes + 1 } : note
-    ));
+    setNotes(
+      notes.map((note) =>
+        note.id === id ? { ...note, likes: note.likes + 1 } : note,
+      ),
+    );
   };
 
   const handleDelete = (id: number) => {
-    setNotes(notes.filter(note => note.id !== id));
+    setNotes(notes.filter((note) => note.id !== id));
+  };
+
+  const handleEdit = (note: Note) => {
+    setEditableNote(note);
+    setEditContent(note.content);
+  };
+
+  const handleSaveEdit = (id: number) => {
+    setNotes(
+      notes.map((note) =>
+        note.id === id ? { ...note, content: editContent } : note,
+      ),
+    );
+    setEditableNote(null); // Clear the editable note
+    setEditContent('');     // Clear the edit input
   };
 
   return (
@@ -36,23 +56,41 @@ export function NoteList() {
             <CardTitle>Note at {note.timestamp}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{note.content}</p>
-            <div className="flex justify-between items-center mt-4">
+            {editableNote?.id === note.id ? (
               <div>
-                <Button variant="outline" size="sm" className="mr-2">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(note.id)}>
-                  <Trash className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                />
+                <Button onClick={() => handleSaveEdit(note.id)}>Save</Button>
+                <Button onClick={() => setEditableNote(null)}>Cancel</Button>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => handleLike(note.id)}>
-                <ThumbsUp className="h-4 w-4 mr-2" />
-                {note.likes}
-              </Button>
-            </div>
+            ) : (
+              <div>
+                <p>{note.content}</p>
+                <div className="flex justify-between items-center mt-4">
+                  <div>
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(note)}>
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(note.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleLike(note.id)}
+                  >
+                    {note.likes}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}

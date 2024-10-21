@@ -74,8 +74,6 @@ export function VideoPlayer() {
             config={{
               youtube: {
                 playerVars: {
-                  // origin:
-                  //   typeof window !== 'undefined' ? window.location.origin : '',
                   autoplay: 1,
                 },
               },

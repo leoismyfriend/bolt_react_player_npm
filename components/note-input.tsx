@@ -1,17 +1,27 @@
-"use client"
-
 import { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
-export function NoteInput() {
-  const [note, setNote] = useState('');
+interface Note {
+  id: number;
+  content: string;
+  timestamp: string;
+  likes: number;
+}
+
+export function NoteInput({ setNotes }: { setNotes: React.Dispatch<React.SetStateAction<Note[]>> }) {
+  const [note, setNote] = useState<string>('');
   const { toast } = useToast();
 
   const handleSubmit = () => {
-    // Here you would typically save the note to your database
-    console.log('Saving note:', note);
+    const newNote: Note = {
+      id: Date.now(),
+      content: note,
+      timestamp: new Date().toLocaleTimeString(),
+      likes: 0
+    };
+    setNotes(prevNotes => [...prevNotes, newNote]);
     toast({
       title: "Note saved",
       description: "Your note has been saved successfully.",
